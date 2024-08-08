@@ -4,9 +4,8 @@ from auth.routes import auth_bp, oauth  # Import the Blueprint and OAuth
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from the .env file
-env_path = os.path.join(os.getcwd(), '.gitignore', '.env')
-load_dotenv(dotenv_path=env_path)
+# Load environment variables from the .env file in the /SmartLifeOrganizer folder
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)

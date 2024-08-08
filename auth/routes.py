@@ -8,8 +8,7 @@ import secrets
 print("Current Working Directory:", os.getcwd())
 
 # Explicitly specify the path to the .env file
-env_path = os.path.join(os.getcwd(), '.gitignore', '.env')
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 # Initialize Blueprint
 auth_bp = Blueprint('auth', __name__)
