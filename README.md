@@ -1,22 +1,29 @@
-# Smart Life Organizer
-
-## Description
-Smart Life Organizer is a web application designed to help users manage tasks, track expenses, and organize daily activities efficiently.
-
-## Features
-- User Authentication
-- Expense Tracking
-- Monthly Spending Reports
-- Task Management
-- Email Reminders
-
-## Setup
-1. Clone the repo: `git clone [your-repository-url]`
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run the server: `python app.py`
-
-Access the application at `http://127.0.0.1:5000/`.
+Here’s a simple README to log your progress so far:
 
 ---
 
-Replace `[your-repository-url]` with the actual URL of your Git repository. This README is concise, covering just the essential information needed to understand and run the project.
+# Smart Life Organizer
+
+## Overview
+Smart Life Organizer is an application designed to help manage various aspects of daily life. It integrates Google OAuth for secure user authentication and features an expense tracking system to help users manage their finances.
+
+## Current Features
+### 1. User Authentication
+- Implemented Google OAuth for secure login.
+- Session management to maintain user login state across sessions.
+- Added route protection to restrict access to certain pages based on user authentication status.
+- Created login and logout functionality.
+
+### 2. Expense Tracking
+- Set up a SQLite database to store user expenses.
+- Created a model to represent expenses in the database.
+- Added a test route to verify database functionality.
+
+### 3. Application Structure
+- Organized the app using Blueprints to separate authentication and main application logic.
+- Environment variables are managed securely using a `.env` file.
+
+## Future Plans
+- Enhance the expense tracking functionality to include categories, filtering, and more detailed reporting.
+- Build out the user interface to display expenses and other personal information.
+- Integrate additional features for task management and notifications.
