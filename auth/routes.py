@@ -61,6 +61,7 @@ def authorize():
     if nonce is None:
         return 'Missing nonce'  # Check if nonce is present
     user_info = google.parse_id_token(token, nonce=nonce)  # Parse ID token using nonce
+    session['user'] = user_info
     return f'Logged in as {user_info["name"]} ({user_info["email"]})'  # Display user info
 
 @auth_bp.route('/logout')
