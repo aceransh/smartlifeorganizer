@@ -37,30 +37,9 @@ def home():
     if 'user' in session:
         return (f'Logged in as {session["user"]["name"]} '
                 f'(email: {session["user"]["email"]}) '
-                '<a href="/logout">Logout</a> '
-                '<a href="/test-db">test-db</a>')
+                '<a href="/logout">Logout</a> ')
     else:
-        return 'Welcome to the Smart Life Organizer! <a href="/login">Login with Google</a> <a href="/test-db">test-db</a>'
-
-@app.route('/test-db')
-@login_required  # Apply the custom login_required decorator to protect this route
-def test():
-    """
-    Test route to add a sample expense to the database and verify database functionality.
-    This route is only accessible to authenticated users.
-    """
-    # Create a new test expense record
-    new_expense = Expense(name="Test Expense", amount=10.99, category="Test Category")
-    db.session.add(new_expense)  # Add the new expense to the session
-    db.session.commit()  # Commit the session to the database
-
-    # Query the database to verify the expense was added
-    expense = Expense.query.filter_by(name="Test Expense").first()
-
-    if expense:
-        return f'Database works fine! Added {expense.name} which was {expense.amount} and was category: {expense.category}'
-    else:
-        return 'Database is not working properly'
+        return 'Welcome to the Smart Life Organizer! <a href="/login">Login with Google</a>'
 
 if __name__ == '__main__':
     app.run(debug=True)  # Run the Flask app in debug mode

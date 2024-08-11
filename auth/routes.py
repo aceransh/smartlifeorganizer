@@ -33,7 +33,7 @@ def login_required(function):
     @wraps(function)
     def dec_function(*args, **kwargs):
         if 'user' not in session:  # If the user is not in session, redirect to the login page
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('home'))
         else:
             return function(*args, **kwargs)  # If the user is authenticated, proceed to the route
     return dec_function
@@ -62,7 +62,7 @@ def authorize():
         return 'Missing nonce'  # Ensure that the nonce is present for security
     user_info = google.parse_id_token(token, nonce=nonce)  # Parse the ID token using the nonce
     session['user'] = user_info  # Store the user info in the session
-    return f'Logged in as {user_info["name"]} ({user_info["email"]}) <a href="/">Home</a>'  # Display the user's info
+    return redirect(url_for('home'))  # Display the user's info
 
 @auth_bp.route('/logout')
 def logout():
