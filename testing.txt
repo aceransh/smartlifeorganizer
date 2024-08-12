@@ -1,22 +1,24 @@
-def login_required(function):
-    @wraps(function)
-    def dec_function(*args, **kwargs):
-        if 'user' not in session:
-            print("User not in session, redirecting to login.")
-            return redirect(url_for('auth.login'))
-        else:
-            print(f"User {session['user']['name']} is authenticated.")
-            return function(*args, **kwargs)
-    return dec_function
+@finance_bp.route('/edit-expense/<int:expense_id>', methods=['GET', 'POST'])
+@login_required
+def edit_expense(expense_id):
+    expense = Expense.query.get_or_404(expense_id)
+    if request.method == 'POST':
+        print(request.form)  # Debug: print the form data
 
+        name = request.form.get('name')
+        amount = request.form.get('amount')
+        category = request.form.get('category')
 
-@auth_bp.route('/login/authorized')
-def authorize():
-    token = google.authorize_access_token()  # Get OAuth token from response
-    nonce = session.pop('nonce', None)  # Retrieve and remove nonce from session
-    if nonce is None:
-        return 'Missing nonce'  # Check if nonce is present
-    user_info = google.parse_id_token(token, nonce=nonce)  # Parse ID token using nonce
-    session['user'] = user_info  # Store user info in session
-    print(f"User {user_info['name']} logged in with email {user_info['email']}")  # Debugging statement
-    return f'Logged in as {user_info["name"]} ({user_info["email"]})'  # Display user info
+        # Ensure that form data is not None
+        if not name or not amount or not category:
+            flash('All fields are required.')
+            return redirect(url_for('finance.edit_expense', expense_id=expense.id))
+
+        expense.name = name
+        expense.amount = amount
+        expense.category = category
+
+        db.session.commit()
+        flash('Expense updated successfully')
+        return redirect('/expenses')
+    return render_template('edit_expense.html', expense=expense)

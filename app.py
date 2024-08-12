@@ -1,6 +1,7 @@
 import os
 from flask import Flask, session
 from finance_tracker.models import db, Expense
+from finance_tracker.routes import finance_bp
 from auth.routes import auth_bp, oauth, login_required  # Import the Blueprint and OAuth
 from dotenv import load_dotenv
 
@@ -26,6 +27,7 @@ with app.app_context():
 
 # Register the Blueprint for authentication routes with the Flask app
 app.register_blueprint(auth_bp)
+app.register_blueprint(finance_bp)
 
 @app.route('/')
 def home():
