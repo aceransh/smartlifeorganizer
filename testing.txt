@@ -1,24 +1,129 @@
-@finance_bp.route('/edit-expense/<int:expense_id>', methods=['GET', 'POST'])
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    
+    <!-- Buttons for Last 30 Days and Last 365 Days -->
+    <div>
+        <a href="{{ url_for('finance.expenses_summary', summary_type='last_30_days') }}">
+            <button type="button">View Last 30 Days</button>
+        </a>
+        <a href="{{ url_for('finance.expenses_summary', summary_type='last_365_days') }}">
+            <button type="button">View Last 365 Days</button>
+        </a>
+    </div>
+
+    <!-- Month and Year Selection Form -->
+    <div>
+        <form method="GET" action="{{ url_for('finance.expenses_summary') }}">
+            <label for="month">Month:</label>
+            <select id="month" name="month">
+                <option value="">-- All Months --</option>  <!-- Empty option for year-only selection -->
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+            
+            <label for="year">Year:</label>
+            <input type="number" id="year" name="year" min="2000" max="{{ datetime.now().year }}" required>
+            
+            <button type="submit">View Summary</button>
+        </form>
+    </div>
+
+    <img src="{{ chart }}" alt="Expenses Summary Chart">
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.name }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.category }}</td>
+                <td>{{ expense.date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
+
+
+
+@finance_bp.route('/expenses-summary', methods=['GET'])
 @login_required
-def edit_expense(expense_id):
-    expense = Expense.query.get_or_404(expense_id)
-    if request.method == 'POST':
-        print(request.form)  # Debug: print the form data
+def expenses_summary():
+    # Get the month, year, and type of summary from the query parameters
+    month = request.args.get('month', type=int)
+    year = request.args.get('year', type=int)
+    summary_type = request.args.get('summary_type')
 
-        name = request.form.get('name')
-        amount = request.form.get('amount')
-        category = request.form.get('category')
+    if summary_type == 'last_30_days':
+        start_date = datetime.now() - timedelta(days=30)
+        end_date = datetime.now()
+        title = "Expenses Summary for Last 30 Days"
+    elif summary_type == 'last_365_days':
+        start_date = datetime.now() - timedelta(days=365)
+        end_date = datetime.now()
+        title = "Expenses Summary for Last 365 Days"
+    elif year and not month:  # Yearly summary
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year + 1, 1, 1)
+        title = f"Expenses Summary for {year}"
+    elif month and year:
+        start_date = datetime(year, month, 1)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1)
+        else:
+            end_date = datetime(year, month + 1, 1)
+        title = f"Expenses Summary for {month}/{year}"
+    else:
+        return redirect(url_for('finance.view_expenses'))
 
-        # Ensure that form data is not None
-        if not name or not amount or not category:
-            flash('All fields are required.')
-            return redirect(url_for('finance.edit_expense', expense_id=expense.id))
+    # Fetch expenses within the specified date range
+    expenses = Expense.query.filter(Expense.date >= start_date, Expense.date < end_date).all()
 
-        expense.name = name
-        expense.amount = amount
-        expense.category = category
+    # Aggregate expenses by category
+    categories = {}
+    for expense in expenses:
+        if expense.category in categories:
+            categories[expense.category] += expense.amount
+        else:
+            categories[expense.category] = expense.amount
 
-        db.session.commit()
-        flash('Expense updated successfully')
-        return redirect('/expenses')
-    return render_template('edit_expense.html', expense=expense)
+    # Plotting
+    fig, ax = plt.subplots()
+    ax.bar(categories.keys(), categories.values(), color='skyblue')
+    ax.set_xlabel('Category')
+    ax.set_ylabel('Total Amount')
+    ax.set_title(title)
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    # Save the plot to a file
+    plot_path = os.path.join('static', 'summary_plot.png')
+    plt.savefig(plot_path)
+
+    return render_template('expenses_summary.html', expenses=expenses, title=title, chart=plot_path, datetime=datetime)

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    
+    <!-- Buttons for Last 30 Days and Last 365 Days -->
+    <div>
+        <a href="{{ url_for('finance.view_expenses') }}"> 
+            <button type="button">Back to Expenses</button>
+        </a>
+        <a href="{{ url_for('finance.expenses_summary', summary_type='last_30_days') }}">
+            <button type="button">View Last 30 Days</button>
+        </a>
+        <a href="{{ url_for('finance.expenses_summary', summary_type='last_365_days') }}">
+            <button type="button">View Last 365 Days</button>
+        </a>
+    </div>
+
+    <!-- Month and Year Selection Form -->
+    <div>
+        <form method="GET" action="{{ url_for('finance.expenses_summary') }}">
+            <label for="month">Month:</label>
+            <select id="month" name="month">
+                <option value="">-- All Months --</option>  <!-- Empty option for year-only selection -->
+                <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
+                <option value="2" {% if selected_month == 2 %}selected{% endif %}>February</option>
+                <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
+                <option value="4" {% if selected_month == 4 %}selected{% endif %}>April</option>
+                <option value="5" {% if selected_month == 5 %}selected{% endif %}>May</option>
+                <option value="6" {% if selected_month == 6 %}selected{% endif %}>June</option>
+                <option value="7" {% if selected_month == 7 %}selected{% endif %}>July</option>
+                <option value="8" {% if selected_month == 8 %}selected{% endif %}>August</option>
+                <option value="9" {% if selected_month == 9 %}selected{% endif %}>September</option>
+                <option value="10" {% if selected_month == 10 %}selected{% endif %}>October</option>
+                <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
+                <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
+            </select>
+            
+            <label for="year">Year:</label>
+            <input type="number" id="year" name="year" min="2000" max="{{ datetime.now().year }}" value="{{ selected_year }}" required>
+            
+            <button type="submit">View Summary</button>
+        </form>
+    </div>
+
+    <img src="{{ chart }}" alt="Expenses Summary Chart">
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.name }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.category }}</td>
+                <td>{{ expense.date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div>
+        <h2>Total Expenses by Category</h2>
+        <ul>
+            {% for category, total in categories.items() %}
+            <li>{{ category }}: ${{ total }}</li>
+            {% endfor %}
+        </ul>
+
+        <h2>Total Amount Spent: ${{ total_amount }}</h2>
+    </div>
+
+</body>
+</html>

@@ -1,5 +1,7 @@
-from flask import Blueprint, redirect, url_for, session
+from flask import Blueprint, redirect, url_for, session, render_template, flash, request
 from authlib.integrations.flask_client import OAuth
+from models import db, User
+from email_utils import send_email
 from functools import wraps
 from dotenv import load_dotenv
 import os
@@ -52,17 +54,27 @@ def login():
 
 @auth_bp.route('/login/authorized')
 def authorize():
-    """
-    Route to handle the response from Google after the user has logged in.
-    The ID token is verified and user information is extracted.
-    """
-    token = google.authorize_access_token()  # Get the OAuth token from the response
-    nonce = session.pop('nonce', None)  # Retrieve and remove the nonce from the session
-    if nonce is None:
-        return 'Missing nonce'  # Ensure that the nonce is present for security
-    user_info = google.parse_id_token(token, nonce=nonce)  # Parse the ID token using the nonce
-    session['user'] = user_info  # Store the user info in the session
-    return redirect(url_for('home'))  # Display the user's info
+    try:
+        token = google.authorize_access_token()  # Get the OAuth token from the response
+        nonce = session.pop('nonce', None)  # Retrieve and remove the nonce from the session
+        if nonce is None:
+            return 'Missing nonce'  # Ensure that the nonce is present for security
+        user_info = google.parse_id_token(token, nonce=nonce)  # Parse the ID token using the nonce
+        session['user'] = user_info  # Store the user info in the session
+
+        # Check if the user already exists in the database
+        user = User.query.filter_by(email=user_info['email']).first()
+        if not user:
+            # If the user does not exist, create a new User record
+            user = User(email=user_info['email'], daily_reminder=False)  # Set default values
+            db.session.add(user)
+            db.session.commit()
+
+    except Exception as e:
+        flash(f"An error occurred during authorization: {str(e)}")
+        return redirect(url_for('auth.login'))
+    
+    return redirect(url_for('home'))  # Redirect to home after successful authorization
 
 @auth_bp.route('/logout')
 def logout():
@@ -72,3 +84,28 @@ def logout():
     """
     session.clear()  # Clear the session to log the user out
     return redirect(url_for('home'))  # Redirect the user to the home page after logout
+
+@auth_bp.route('/trigger-email', methods=['GET'])
+@login_required
+def trigger_email():
+    user_email = session.get('user')['email']  # Retrieve email from session
+    if user_email:
+        send_email(
+            recipient=user_email,
+            subject="Daily Expense Reminder",
+            body="This is a reminder to log your expenses for today!"
+        )
+    return redirect(url_for('finance.view_expenses'))  # Redirect to the main expenses page
+
+@auth_bp.route('/profile-settings', methods=['GET', 'POST'])
+@login_required
+def profile_settings():
+    user = User.query.filter_by(email=session.get('user')['email']).first()
+
+    if request.method == 'POST':
+        user.daily_reminder = request.form.get('daily_reminder') != 'on'
+        db.session.commit()
+        flash('Settings updated successfully.')
+        return redirect(url_for('auth.profile_settings'))
+
+    return render_template('profile_settings.html', user=user)

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Settings</title>
+</head>
+<body>
+    <h1>Profile Settings</h1>
+    
+    <form method="POST" action="{{ url_for('auth.profile_settings') }}">
+        <label for="daily_reminder">Unsubscribed from Daily Reminder:</label>
+        <input type="checkbox" id="daily_reminder" name="daily_reminder" {% if not user.daily_reminder %}checked{% endif %}>
+        
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <a href="{{ url_for('finance.view_expenses') }}">Back to Expenses</a>
+</body>
+</html>

@@ -1,9 +1,12 @@
 import os
 from flask import Flask, session
-from finance_tracker.models import db, Expense
 from finance_tracker.routes import finance_bp
-from auth.routes import auth_bp, oauth, login_required  # Import the Blueprint and OAuth
+from auth.routes import auth_bp, oauth  # Importing the OAuth instance
+from models import db, User
 from dotenv import load_dotenv
+from apscheduler.schedulers.background import BackgroundScheduler
+from email_utils import send_email  # Assuming email_utils.py is in the same directory
+from datetime import datetime
 
 # Load environment variables from the .env file located in the /SmartLifeOrganizer folder
 load_dotenv()
@@ -25,9 +28,26 @@ oauth.init_app(app)
 with app.app_context():
     db.create_all()
 
-# Register the Blueprint for authentication routes with the Flask app
+# Register the Blueprints for authentication and finance routes with the Flask app
 app.register_blueprint(auth_bp)
 app.register_blueprint(finance_bp)
+
+# Function to send daily email reminders
+def send_daily_reminder():
+    with app.app_context():
+        # Retrieve all users who have subscribed to daily reminders
+        users = User.query.filter_by(daily_reminder=True).all()
+        for user in users:
+            send_email(
+                recipient=user.email,
+                subject="Daily Expense Reminder",
+                body="This is your daily reminder to log your expenses!"
+            )
+
+# Set up the scheduler
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(send_daily_reminder, 'cron', hour=20)  # Send daily emails at 8 PM
+scheduler.start()
 
 @app.route('/')
 def home():
