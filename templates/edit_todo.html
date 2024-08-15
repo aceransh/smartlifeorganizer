@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit To-Do</title>
+</head>
+<body>
+    <h1>Edit To-Do</h1>
+    <form method="POST">
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject" value="{{ todo.subject }}" required>
+        <br>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required>{{ todo.description }}</textarea>
+        <br>
+        <label for="due_date">Due Date:</label>
+        <input type="datetime-local" id="due_date" name="due_date" value="{{ todo.due_date|datetimeformat }}" >
+        <br>
+        <label for="reminder_time">Reminder Time:</label>
+        <input type="datetime-local" id="reminder_time" name="reminder_time" value="{{ todo.reminder_time|datetimeformat }}" >
+        <br>
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="Incomplete" {% if todo.status == 'Incomplete' %}selected{% endif %}>Incomplete</option>
+            <option value="Completed" {% if todo.status == 'Completed' %}selected{% endif %}>Completed</option>
+        </select>
+        <br>
+        <button type="submit">Save</button>
+    </form>
+    <a href="{{ url_for('to_do.view_todos') }}">Back to To-Do List</a>
+</body>
+</html>

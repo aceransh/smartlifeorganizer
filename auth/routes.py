@@ -55,26 +55,29 @@ def login():
 @auth_bp.route('/login/authorized')
 def authorize():
     try:
-        token = google.authorize_access_token()  # Get the OAuth token from the response
-        nonce = session.pop('nonce', None)  # Retrieve and remove the nonce from the session
+        token = google.authorize_access_token()
+        nonce = session.pop('nonce', None)
         if nonce is None:
-            return 'Missing nonce'  # Ensure that the nonce is present for security
-        user_info = google.parse_id_token(token, nonce=nonce)  # Parse the ID token using the nonce
-        session['user'] = user_info  # Store the user info in the session
+            return 'Missing nonce'
+        user_info = google.parse_id_token(token, nonce=nonce)
+        session['user'] = user_info
 
         # Check if the user already exists in the database
         user = User.query.filter_by(email=user_info['email']).first()
         if not user:
             # If the user does not exist, create a new User record
-            user = User(email=user_info['email'], daily_reminder=False)  # Set default values
+            user = User(email=user_info['email'], name=user_info.get('name'), daily_reminder=False)
             db.session.add(user)
             db.session.commit()
+
+        # Store the user's ID in the session
+        session['user_id'] = user.id
 
     except Exception as e:
         flash(f"An error occurred during authorization: {str(e)}")
         return redirect(url_for('auth.login'))
     
-    return redirect(url_for('home'))  # Redirect to home after successful authorization
+    return redirect(url_for('home'))
 
 @auth_bp.route('/logout')
 def logout():
@@ -103,7 +106,7 @@ def profile_settings():
     user = User.query.filter_by(email=session.get('user')['email']).first()
 
     if request.method == 'POST':
-        user.daily_reminder = request.form.get('daily_reminder') != 'on'
+        user.daily_reminder = request.form.get('daily_reminder') == 'on'
         db.session.commit()
         flash('Settings updated successfully.')
         return redirect(url_for('auth.profile_settings'))

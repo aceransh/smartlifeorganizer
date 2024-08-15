@@ -9,12 +9,12 @@
     <h1>Profile Settings</h1>
     
     <form method="POST" action="{{ url_for('auth.profile_settings') }}">
-        <label for="daily_reminder">Unsubscribed from Daily Reminder:</label>
-        <input type="checkbox" id="daily_reminder" name="daily_reminder" {% if not user.daily_reminder %}checked{% endif %}>
-        
+        <label for="daily_reminder">Subscribed to Daily Reminder:</label>
+        <input type="checkbox" id="daily_reminder" name="daily_reminder" {% if user.daily_reminder %}checked{% endif %}>
         <button type="submit">Save Changes</button>
     </form>
-
+    
+    <br>
     <a href="{{ url_for('finance.view_expenses') }}">Back to Expenses</a>
 </body>
 </html>

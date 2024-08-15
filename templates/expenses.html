@@ -4,6 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expenses</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h1 {
+            text-align: center;
+        }
+        button {
+            margin: 5px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Expenses</h1>
@@ -45,7 +68,7 @@
                 <td>{{ expense.name }}</td>
                 <td>{{ expense.amount }}</td>
                 <td>{{ expense.category }}</td>
-                <td>{{ expense.date }}</td>
+                <td>{{ expense.date|datetimeformat }}</td>
                 <td>
                     <!-- Edit button -->
                     <a href="{{ url_for('finance.edit_expense', expense_id=expense.id) }}">

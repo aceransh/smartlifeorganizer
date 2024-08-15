@@ -13,13 +13,16 @@ finance_bp = Blueprint('finance', __name__)
 @finance_bp.route('/expenses')
 @login_required
 def view_expenses():
+    # Get the user_id from the session
+    user_id = session.get('user_id')
+    
     # Get query parameters for filtering
     filter_date = request.args.get('date')
     filter_category = request.args.get('category')
     search_term = request.args.get('search')
 
-    # Base query
-    query = Expense.query
+    # Base query, filtering by the logged-in user's expenses
+    query = Expense.query.filter_by(user_id=user_id)
 
     # Apply filters based on the query parameters
     if filter_date:
@@ -43,13 +46,15 @@ def add_expense():
         amount = request.form.get('amount')
         category = request.form.get('category')
         
-        # Validate that all fields are provided
         if not name or not amount or not category:
             flash('All fields are required.')
             return redirect(url_for('finance.add_expense'))
         
-        # Add the new expense
-        new_expense = Expense(name=name, amount=amount, category=category)
+        # Get the user_id from the session
+        user_id = session.get('user_id')
+        
+        # Add the new expense with the user_id
+        new_expense = Expense(name=name, amount=amount, category=category, user_id=user_id)
         db.session.add(new_expense)
         db.session.commit()
         return redirect('/expenses')
