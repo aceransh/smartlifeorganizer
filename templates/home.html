@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Life Organizer</title>
+</head>
+<body>
+    <h1>Welcome to the Smart Life Organizer!</h1>
+
+    {% if session['user'] %}
+        <p>Logged in as {{ session['user']['name'] }} (email: {{ session['user']['email'] }})</p>
+        <a href="/logout">
+            <button type="button">Logout</button>
+        </a>
+        
+        <h2>Manage Your Life</h2>
+        <div>
+            <a href="/todos">
+                <button type="button">View To-Do List</button>
+            </a>
+            <a href="/add-todo">
+                <button type="button">Add To-Do Item</button>
+            </a>
+            <a href="/expenses">
+                <button type="button">View Expenses</button>
+            </a>
+            <a href="/add-expense">
+                <button type="button">Add Expense</button>
+            </a>
+        </div>
+        
+    {% else %}
+        <p>You are not logged in.</p>
+        <a href="/login">
+            <button type="button">Login with Google</button>
+        </a>
+    {% endif %}
+</body>
+</html>

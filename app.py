@@ -1,5 +1,5 @@
 import os
-from flask import Flask, session
+from flask import Flask, session, render_template
 from finance_tracker.routes import finance_bp
 from auth.routes import auth_bp, oauth  # Importing the OAuth instance
 from to_do_list.routes import to_do_bp  # Import the to-do blueprint
@@ -56,15 +56,10 @@ scheduler.start()
 def home():
     """
     Home route that checks if the user is logged in.
-    If logged in, it displays the user's name and a logout link.
+    If logged in, it renders the home template with user information.
     If not logged in, it provides a link to log in with Google.
     """
-    if 'user' in session:
-        return (f'Logged in as {session["user"]["name"]} '
-                f'(email: {session["user"]["email"]}) '
-                '<a href="/logout">Logout</a> ')
-    else:
-        return 'Welcome to the Smart Life Organizer! <a href="/login">Login with Google</a>'
+    return render_template('home.html')
 
 if __name__ == '__main__':
     app.run(debug=True)  # Run the Flask app in debug mode
