@@ -26,12 +26,13 @@ class User(db.Model):
     
 class ToDoItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    subject = db.Column(db.String(50), nullable=True)  # Optional field
-    description = db.Column(db.Text, nullable=False)
-    due_date = db.Column(db.DateTime, nullable=True)  # Optional field
-    reminder_time = db.Column(db.DateTime, nullable=True)  # Optional field
-    status = db.Column(db.String(20), default='Incomplete')  # New status field
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Link to User model
+    subject = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    due_date = db.Column(db.DateTime)
+    reminder_time = db.Column(db.DateTime)
+    status = db.Column(db.String(50), nullable=False, default='Incomplete')
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    reminder_sent = db.Column(db.Boolean, default=False)  # New field to track reminder status
 
     def __repr__(self):
         return f'<ToDoItem {self.description}>'

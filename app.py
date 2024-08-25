@@ -6,7 +6,7 @@ from to_do_list.routes import to_do_bp  # Import the to-do blueprint
 from models import db, User
 from dotenv import load_dotenv
 from apscheduler.schedulers.background import BackgroundScheduler
-from email_utils import send_email, send_daily_reminder  # Import the send_daily_reminder function
+from email_utils import send_email, send_daily_reminder, check_reminders  # Import the necessary functions
 from datetime import datetime
 
 # Import Flask-Migrate for handling migrations
@@ -50,6 +50,7 @@ app.jinja_env.filters['datetimeformat'] = datetimeformat
 # Set up the scheduler
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.add_job(lambda: send_daily_reminder(app), 'cron', hour=20)  # Send daily emails at 8 PM
+scheduler.add_job(lambda: check_reminders(app), 'interval', minutes=1)  # Check for to-do reminders every minute
 scheduler.start()
 
 @app.route('/')
@@ -60,6 +61,19 @@ def home():
     If not logged in, it provides a link to log in with Google.
     """
     return render_template('home.html')
+
+@app.route('/trigger-email')
+def trigger_email():
+    if 'user' in session:
+        recipient = session['user']['email']
+        subject = "Test Email from Smart Life Organizer"
+        body = "This is a test email to ensure that the email functionality is working correctly."
+
+        send_email(recipient=recipient, subject=subject, body=body)
+        
+        return f"Test email sent to {recipient}!"
+    else:
+        return "You must be logged in to send a test email."
 
 if __name__ == '__main__':
     app.run(debug=True)  # Run the Flask app in debug mode
