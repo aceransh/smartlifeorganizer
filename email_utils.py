@@ -7,13 +7,14 @@ from email.mime.base import MIMEBase
 from email import encoders
 from models import User, ToDoItem
 import os
-from datetime import datetime
+from pytz import timezone
+from datetime import datetime, timedelta
 
 def send_email(recipient, subject, body):
     sender_email = os.getenv("EMAIL_USER")
     sender_password = os.getenv("EMAIL_PASS")
 
-    unsubscribe_link = f"http://127.0.0.1:5000//profile-settings"  # Adjust as needed
+    unsubscribe_link = "https://smartlifeorganizer.onrender.com/profile-settings"  # Adjust as needed
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -47,14 +48,16 @@ def send_daily_reminder(app):
 
 def check_reminders(app):
     with app.app_context():
-        now = datetime.now()
+        now = datetime.now(timezone('UTC')).replace(microsecond=0)  # Use UTC timezone and strip microseconds
         print(f"Checking reminders at {now}")  # Debugging: Print the current time
 
-        # Find all to-do items with a reminder_time that matches or is before the current time and where the reminder hasn't been sent
+        buffer_time = timedelta(minutes=5)  # Buffer time to prevent immediate reminder sending
+
+        # Find all to-do items with a reminder_time that is within the next buffer period and where the reminder hasn't been sent
         todos = ToDoItem.query.filter(
-            ToDoItem.reminder_time <= now,
+            ToDoItem.reminder_time <= now + buffer_time,
             ToDoItem.status == 'Incomplete',
-            ToDoItem.reminder_sent == False  # Check if the reminder has not been sent
+            ToDoItem.reminder_sent == False
         ).all()
 
         print(f"Found {len(todos)} todo items needing reminders")  # Debugging: Print the number of matching todos
@@ -69,7 +72,7 @@ def check_reminders(app):
                         recipient=user.email,
                         subject=f"Reminder: {todo.description}",
                         body=f"This is a reminder to complete the following task: {todo.description} by {todo.due_date.strftime('%Y-%m-%d %H:%M')}.\n"
-                             f"You can view your To-Do list here: http://127.0.0.1:5000/todos"
+                             f"You can view your To-Do list here: https://smartlifeorganizer.onrender.com/todos"
                     )
                     todo.reminder_sent = True  # Mark the reminder as sent
                     db.session.commit()  # Commit the changes to the database
